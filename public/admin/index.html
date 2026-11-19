@@ -1,0 +1,950 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>NSS Administration &middot; Bangalore Institute of Technology</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <script src="https://cdn.tailwindcss.com/3.4.17"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            paper: '#FAF8F4',
+            surface: '#FFFFFF',
+            stoneBand: '#F2EFE9',
+            ink: '#131826',
+            inkSecondary: '#3E4659',
+            inkMuted: '#636B7E',
+            nssNavy: '#18265C',
+            nssNavyDeep: '#101B45',
+            nssNavySoft: '#EBF0FA',
+            nssRed: '#C81D25',
+            nssRedDark: '#A1151C',
+            nssRedSoft: '#FCEEEE'
+          },
+          fontFamily: {
+            sans: ['"Plus Jakarta Sans"', 'system-ui', '-apple-system', 'sans-serif'],
+            serif: ['Fraunces', 'Georgia', 'serif']
+          }
+        }
+      }
+    };
+  </script>
+  <style>
+    :root {
+      --hairline: rgba(19, 24, 38, 0.1);
+      --hairline-strong: rgba(19, 24, 38, 0.18);
+    }
+    html, body {
+      background-color: #FAF8F4;
+      color: #131826;
+      font-family: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
+    }
+    .hairline { border-color: var(--hairline); }
+    .hairline-strong { border-color: var(--hairline-strong); }
+    .focus-ring:focus-visible {
+      outline: 2px solid #C81D25;
+      outline-offset: 2px;
+    }
+    .fade-in {
+      animation: fadeIn 200ms ease-out both;
+    }
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(6px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+  </style>
+</head>
+<body class="min-h-screen flex flex-col bg-paper text-ink">
+
+  <!-- Toast Notification Container -->
+  <div id="toastContainer" aria-live="polite" class="fixed bottom-6 right-6 z-50 flex flex-col gap-2 max-w-sm w-full pointer-events-none px-4 sm:px-0"></div>
+
+  <!-- Admin Masthead -->
+  <header class="bg-surface border-b-2 border-nssNavy shadow-sm sticky top-0 z-40">
+    <div class="h-1.5 w-full bg-nssRed"></div>
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3.5 flex items-center justify-between gap-4">
+      <div class="flex items-center gap-3">
+        <div class="w-10 h-10 rounded-xl bg-nssNavyDeep text-white flex items-center justify-center font-serif text-lg font-bold shadow-sm">
+          BIT
+        </div>
+        <div>
+          <h1 class="font-serif text-lg sm:text-xl font-semibold text-nssNavyDeep leading-snug">
+            NSS Portal &middot; Administration
+          </h1>
+          <p class="text-xs text-inkMuted hidden sm:block">Bangalore Institute of Technology &middot; VV Puram</p>
+        </div>
+      </div>
+
+      <div class="flex items-center gap-3">
+        <a
+          href="/"
+          class="px-3.5 py-1.5 rounded-xl border hairline hover:bg-stoneBand text-xs sm:text-sm font-medium text-inkSecondary hover:text-ink transition-colors flex items-center gap-1.5"
+        >
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"/></svg>
+          <span class="hidden sm:inline">Return to</span> Public Site
+        </a>
+
+        <!-- Authenticated Profile Menu -->
+        <div id="authHeaderControls" class="hidden flex items-center gap-2">
+          <button
+            id="openChangePwdBtn"
+            type="button"
+            class="px-3 py-1.5 rounded-xl bg-stoneBand hover:bg-stoneBand/80 text-xs sm:text-sm font-medium text-ink transition-colors"
+          >
+            Password
+          </button>
+          <button
+            id="signOutBtn"
+            type="button"
+            class="px-3 py-1.5 rounded-xl bg-nssRedSoft hover:bg-nssRed hover:text-white text-xs sm:text-sm font-semibold text-nssRed transition-colors"
+          >
+            Sign out
+          </button>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <!-- Main Container -->
+  <main class="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-12">
+
+    <!-- ==================== VIEW 1: LOGIN ==================== -->
+    <section id="loginView" class="max-w-md mx-auto my-12 fade-in">
+      <div class="bg-surface border hairline rounded-2xl p-8 sm:p-10 shadow-sm">
+        <div class="text-center mb-8">
+          <div class="inline-flex p-3 rounded-2xl bg-nssNavySoft text-nssNavy mb-3">
+            <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/></svg>
+          </div>
+          <h2 class="font-serif text-2xl sm:text-3xl font-semibold text-nssNavyDeep">Programme Officer Login</h2>
+          <p class="text-sm text-inkSecondary mt-2">Sign in to manage gallery photographs, albums, and community archives.</p>
+        </div>
+
+        <div id="loginError" class="hidden mb-6 p-4 rounded-xl bg-nssRedSoft border border-nssRed text-nssRed text-sm font-medium"></div>
+
+        <form id="loginForm" class="space-y-5">
+          <div>
+            <label for="loginEmail" class="block text-sm font-semibold text-ink mb-1.5">Official Email</label>
+            <input
+              id="loginEmail"
+              type="email"
+              required
+              value="sushilkumarv@bit-bangalore.edu.in"
+              placeholder="sushilkumarv@bit-bangalore.edu.in"
+              class="w-full px-4 py-2.5 rounded-xl border hairline-strong bg-paper focus:bg-white focus-ring text-base text-ink"
+            />
+          </div>
+
+          <div>
+            <label for="loginPassword" class="block text-sm font-semibold text-ink mb-1.5">Password</label>
+            <input
+              id="loginPassword"
+              type="password"
+              required
+              placeholder="Enter admin password"
+              class="w-full px-4 py-2.5 rounded-xl border hairline-strong bg-paper focus:bg-white focus-ring text-base text-ink"
+            />
+          </div>
+
+          <button
+            id="loginSubmitBtn"
+            type="submit"
+            class="w-full py-3 rounded-xl bg-nssNavy hover:bg-nssNavyDeep text-white font-semibold text-base transition-colors shadow-sm focus-ring"
+          >
+            Sign In to Dashboard
+          </button>
+        </form>
+      </div>
+    </section>
+
+    <!-- ==================== VIEW 2: DASHBOARD ==================== -->
+    <section id="dashboardView" class="hidden space-y-10 fade-in">
+
+      <!-- Status Bar -->
+      <div class="bg-surface border hairline rounded-2xl p-5 sm:p-6 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 shadow-sm">
+        <div>
+          <span class="text-xs font-semibold uppercase tracking-wider text-nssRed">Active Session</span>
+          <h2 class="font-serif text-2xl font-semibold text-nssNavyDeep mt-0.5" id="userEmailBadge">Admin Dashboard</h2>
+          <p class="text-sm text-inkSecondary mt-0.5">Upload new albums, add multiple high-resolution photos, and manage records stored in SQLite.</p>
+        </div>
+        <div class="flex items-center gap-3">
+          <div class="px-4 py-2 rounded-xl bg-nssNavySoft text-nssNavy text-sm font-semibold tabular-nums">
+            <span id="albumCountDisplay">0</span> Albums Published
+          </div>
+        </div>
+      </div>
+
+      <!-- Section: Upload New Album with Multi-Photos -->
+      <div class="bg-surface border hairline rounded-2xl p-6 sm:p-8 shadow-sm">
+        <div class="mb-6 pb-4 border-b hairline">
+          <p class="text-xs font-semibold uppercase tracking-wider text-nssRed">New Event Entry</p>
+          <h3 class="font-serif text-2xl font-semibold text-nssNavyDeep mt-1">Publish Photo Album</h3>
+          <p class="text-sm text-inkSecondary mt-1">Provide a single title, event date, and description, then attach multiple photos for this activity.</p>
+        </div>
+
+        <form id="albumUploadForm" class="space-y-6">
+          <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <div class="md:col-span-2">
+              <label for="albumTitle" class="block text-sm font-semibold text-ink mb-1.5">
+                Album / Activity Title <span class="text-nssRed">*</span>
+              </label>
+              <input
+                id="albumTitle"
+                type="text"
+                required
+                placeholder="e.g. Annual Blood Donation & Medical Checkup Camp"
+                class="w-full px-4 py-2.5 rounded-xl border hairline-strong bg-paper focus:bg-white focus-ring text-base text-ink"
+              />
+            </div>
+            <div>
+              <label for="albumDate" class="block text-sm font-semibold text-ink mb-1.5">
+                Event Date <span class="text-nssRed">*</span>
+              </label>
+              <input
+                id="albumDate"
+                type="date"
+                required
+                class="w-full px-4 py-2.5 rounded-xl border hairline-strong bg-paper focus:bg-white focus-ring text-base text-ink tabular-nums"
+              />
+            </div>
+          </div>
+
+          <div>
+            <label for="albumDescription" class="block text-sm font-semibold text-ink mb-1.5">
+              Description &amp; Volunteer Participation Details <span class="text-nssRed">*</span>
+            </label>
+            <textarea
+              id="albumDescription"
+              rows="3"
+              required
+              placeholder="Describe the objective, location, partner hospital or NGO, and volunteer contributions..."
+              class="w-full px-4 py-2.5 rounded-xl border hairline-strong bg-paper focus:bg-white focus-ring text-base text-ink"
+            ></textarea>
+          </div>
+
+          <!-- Multiple Photos Upload Drag & Drop Area -->
+          <div>
+            <label class="block text-sm font-semibold text-ink mb-1.5">
+              Photographs (Select one or multiple) <span class="text-nssRed">*</span>
+            </label>
+            <div
+              id="dropZone"
+              class="border-2 border-dashed hairline-strong rounded-2xl p-6 sm:p-8 text-center bg-paper hover:bg-stoneBand/60 transition-colors cursor-pointer"
+            >
+              <input
+                id="fileInput"
+                type="file"
+                multiple
+                accept="image/jpeg,image/png,image/webp,image/gif"
+                class="hidden"
+              />
+              <div class="flex flex-col items-center justify-center gap-2">
+                <div class="p-3.5 rounded-2xl bg-surface border hairline text-nssNavy">
+                  <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
+                </div>
+                <p class="text-base font-semibold text-nssNavyDeep">
+                  Click to select photos or drag &amp; drop images here
+                </p>
+                <p class="text-xs text-inkMuted">
+                  Supports JPEG, PNG, WebP, GIF &middot; Up to 15 MB per image &middot; Select multiple files at once
+                </p>
+              </div>
+            </div>
+
+            <!-- Preview Grid for Selected Photos -->
+            <div id="previewContainer" class="hidden mt-4">
+              <div class="flex items-center justify-between mb-2">
+                <span id="previewCount" class="text-xs font-semibold text-nssNavy uppercase tracking-wider"></span>
+                <button id="clearSelectionBtn" type="button" class="text-xs font-semibold text-nssRed hover:underline">
+                  Clear all
+                </button>
+              </div>
+              <div id="previewGrid" class="grid grid-cols-2 sm:grid-cols-4 md:grid-cols-6 gap-3"></div>
+            </div>
+          </div>
+
+          <div class="pt-2 flex items-center justify-end">
+            <button
+              id="uploadSubmitBtn"
+              type="submit"
+              class="px-6 py-3 rounded-xl bg-nssNavy hover:bg-nssNavyDeep text-white font-semibold text-base transition-colors shadow-sm focus-ring flex items-center gap-2"
+            >
+              <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"/></svg>
+              <span>Publish Album &amp; Photos</span>
+            </button>
+          </div>
+        </form>
+      </div>
+
+      <!-- Section: Manage Published Albums -->
+      <div class="bg-surface border hairline rounded-2xl p-6 sm:p-8 shadow-sm">
+        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6 pb-4 border-b hairline">
+          <div>
+            <p class="text-xs font-semibold uppercase tracking-wider text-nssRed">Database Records</p>
+            <h3 class="font-serif text-2xl font-semibold text-nssNavyDeep mt-1">Published Albums</h3>
+          </div>
+          <div class="flex items-center gap-3">
+            <label for="adminYearFilter" class="text-sm font-medium text-inkSecondary whitespace-nowrap">Filter Year:</label>
+            <select id="adminYearFilter" class="px-3 py-1.5 rounded-xl border hairline bg-paper text-sm font-medium text-ink"></select>
+          </div>
+        </div>
+
+        <div id="adminAlbumsList" class="space-y-6"></div>
+      </div>
+
+    </section>
+  </main>
+
+  <!-- ==================== MODAL: EDIT ALBUM DETAILS ==================== -->
+  <div id="editAlbumModal" class="hidden fixed inset-0 z-50 flex items-center justify-center p-4" role="dialog" aria-modal="true">
+    <div id="editAlbumBackdrop" class="absolute inset-0 bg-ink/70 backdrop-blur-sm"></div>
+    <div class="relative bg-surface rounded-2xl max-w-lg w-full p-6 sm:p-8 shadow-2xl z-10">
+      <h3 class="font-serif text-xl sm:text-2xl font-semibold text-nssNavyDeep">Edit Album Details</h3>
+      <p class="text-sm text-inkSecondary mt-1">Update the title, event date, and description for this album.</p>
+
+      <form id="editAlbumForm" class="mt-5 space-y-4">
+        <input type="hidden" id="editAlbumId" />
+        <div>
+          <label for="editAlbumTitle" class="block text-xs font-semibold text-ink mb-1">Title</label>
+          <input id="editAlbumTitle" type="text" required class="w-full px-3.5 py-2 rounded-xl border hairline-strong bg-paper focus:bg-white text-sm" />
+        </div>
+        <div>
+          <label for="editAlbumDate" class="block text-xs font-semibold text-ink mb-1">Event Date</label>
+          <input id="editAlbumDate" type="date" required class="w-full px-3.5 py-2 rounded-xl border hairline-strong bg-paper focus:bg-white text-sm tabular-nums" />
+        </div>
+        <div>
+          <label for="editAlbumDescription" class="block text-xs font-semibold text-ink mb-1">Description</label>
+          <textarea id="editAlbumDescription" rows="3" required class="w-full px-3.5 py-2 rounded-xl border hairline-strong bg-paper focus:bg-white text-sm"></textarea>
+        </div>
+        <div class="pt-2 flex justify-end gap-2">
+          <button id="cancelEditAlbumBtn" type="button" class="px-4 py-2 rounded-xl border hairline text-sm font-medium hover:bg-stoneBand">Cancel</button>
+          <button type="submit" class="px-5 py-2 rounded-xl bg-nssNavy text-white text-sm font-semibold hover:bg-nssNavyDeep">Save Changes</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- ==================== MODAL: ADD PHOTOS TO ALBUM ==================== -->
+  <div id="appendPhotosModal" class="hidden fixed inset-0 z-50 flex items-center justify-center p-4" role="dialog" aria-modal="true">
+    <div id="appendPhotosBackdrop" class="absolute inset-0 bg-ink/70 backdrop-blur-sm"></div>
+    <div class="relative bg-surface rounded-2xl max-w-lg w-full p-6 sm:p-8 shadow-2xl z-10">
+      <h3 class="font-serif text-xl font-semibold text-nssNavyDeep">Add Photos to Album</h3>
+      <p id="appendPhotosTargetTitle" class="text-sm text-inkSecondary mt-1"></p>
+
+      <form id="appendPhotosForm" class="mt-5 space-y-4">
+        <input type="hidden" id="appendAlbumId" />
+        <div>
+          <input
+            id="appendFileInput"
+            type="file"
+            multiple
+            accept="image/jpeg,image/png,image/webp,image/gif"
+            required
+            class="w-full text-sm text-inkSecondary file:mr-4 file:py-2 file:px-4 file:rounded-xl file:border-0 file:text-sm file:font-semibold file:bg-nssNavySoft file:text-nssNavy hover:file:bg-nssNavy hover:file:text-white file:transition-colors"
+          />
+        </div>
+        <div class="pt-2 flex justify-end gap-2">
+          <button id="cancelAppendBtn" type="button" class="px-4 py-2 rounded-xl border hairline text-sm font-medium hover:bg-stoneBand">Cancel</button>
+          <button id="appendSubmitBtn" type="submit" class="px-5 py-2 rounded-xl bg-nssNavy text-white text-sm font-semibold hover:bg-nssNavyDeep">Upload &amp; Attach</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- ==================== MODAL: CONFIRM DELETE ALBUM ==================== -->
+  <div id="deleteModal" class="hidden fixed inset-0 z-50 flex items-center justify-center p-4" role="dialog" aria-modal="true">
+    <div id="deleteBackdrop" class="absolute inset-0 bg-ink/70 backdrop-blur-sm"></div>
+    <div class="relative bg-surface rounded-2xl max-w-md w-full p-6 shadow-2xl z-10">
+      <h3 class="font-serif text-xl font-semibold text-nssNavyDeep">Delete Album</h3>
+      <p id="deleteMessage" class="text-sm text-inkSecondary mt-2">Are you sure you want to delete this album? All its uploaded photos will be permanently removed.</p>
+      <div class="mt-6 flex justify-end gap-2">
+        <button id="cancelDeleteBtn" type="button" class="px-4 py-2 rounded-xl border hairline text-sm hover:bg-stoneBand">Cancel</button>
+        <button id="confirmDeleteBtn" type="button" class="px-5 py-2 rounded-xl bg-nssRed text-white text-sm font-semibold hover:bg-nssRedDark">Delete Permanently</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ==================== MODAL: CHANGE ADMIN PASSWORD ==================== -->
+  <div id="changePwdModal" class="hidden fixed inset-0 z-50 flex items-center justify-center p-4" role="dialog" aria-modal="true">
+    <div id="changePwdBackdrop" class="absolute inset-0 bg-ink/70 backdrop-blur-sm"></div>
+    <div class="relative bg-surface rounded-2xl max-w-md w-full p-6 sm:p-8 shadow-2xl z-10">
+      <h3 class="font-serif text-xl font-semibold text-nssNavyDeep">Change Admin Password</h3>
+      <p class="text-sm text-inkSecondary mt-1">Enter your current password and choose a new password with at least 6 characters.</p>
+
+      <form id="changePwdForm" class="mt-5 space-y-4">
+        <div>
+          <label for="curPwd" class="block text-xs font-semibold text-ink mb-1">Current Password</label>
+          <input id="curPwd" type="password" required class="w-full px-3.5 py-2 rounded-xl border hairline-strong bg-paper focus:bg-white text-sm" />
+        </div>
+        <div>
+          <label for="newPwd" class="block text-xs font-semibold text-ink mb-1">New Password (min 6 chars)</label>
+          <input id="newPwd" type="password" required minlength="6" class="w-full px-3.5 py-2 rounded-xl border hairline-strong bg-paper focus:bg-white text-sm" />
+        </div>
+        <div class="pt-2 flex justify-end gap-2">
+          <button id="cancelChangePwdBtn" type="button" class="px-4 py-2 rounded-xl border hairline text-sm hover:bg-stoneBand">Cancel</button>
+          <button type="submit" class="px-5 py-2 rounded-xl bg-nssNavy text-white text-sm font-semibold hover:bg-nssNavyDeep">Update Password</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Admin JavaScript -->
+  <script>
+    (function () {
+      'use strict';
+
+      const state = {
+        authenticated: false,
+        email: '',
+        albums: [],
+        availableYears: [],
+        selectedYear: 'All',
+        selectedFiles: [], // Array of File objects for pending upload
+        pendingDeleteType: null, // 'album' | 'photo'
+        pendingDeleteId: null
+      };
+
+      const $ = (id) => document.getElementById(id);
+
+      function escapeHtml(str) {
+        return String(str == null ? '' : str)
+          .replace(/&/g, '&amp;')
+          .replace(/</g, '&lt;')
+          .replace(/>/g, '&gt;')
+          .replace(/"/g, '&quot;')
+          .replace(/'/g, '&#39;');
+      }
+
+      function formatBytes(bytes) {
+        if (!bytes || bytes === 0) return '0 B';
+        const k = 1024;
+        const sizes = ['B', 'KB', 'MB', 'GB'];
+        const i = Math.floor(Math.log(bytes) / Math.log(k));
+        return parseFloat((bytes / Math.pow(k, i)).toFixed(1)) + ' ' + sizes[i];
+      }
+
+      function formatDate(iso) {
+        if (!iso) return 'Recent';
+        const d = new Date(iso + (iso.length === 10 ? 'T00:00:00' : ''));
+        if (Number.isNaN(d.getTime())) return iso;
+        return d.toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' });
+      }
+
+      function showToast(message, variant = 'info') {
+        const container = $('toastContainer');
+        if (!container) return;
+        const tone = variant === 'error'
+          ? 'bg-nssRed text-white border-nssRedDark'
+          : 'bg-nssNavyDeep text-white border-nssNavy';
+        const el = document.createElement('div');
+        el.className = 'pointer-events-auto px-4 py-3 rounded-xl border text-sm font-medium shadow-lg fade-in ' + tone;
+        el.textContent = message;
+        container.appendChild(el);
+        window.setTimeout(() => el.remove(), 3500);
+      }
+
+      // Check Session on Boot
+      async function checkAuth() {
+        try {
+          const res = await fetch('/api/auth/me');
+          if (res.ok) {
+            const data = await res.json();
+            state.authenticated = true;
+            state.email = data.email;
+            showDashboard();
+          } else {
+            showLogin();
+          }
+        } catch {
+          showLogin();
+        }
+      }
+
+      function showLogin() {
+        state.authenticated = false;
+        $('loginView').classList.remove('hidden');
+        $('dashboardView').classList.add('hidden');
+        $('authHeaderControls').classList.add('hidden');
+      }
+
+      function showDashboard() {
+        state.authenticated = true;
+        $('loginView').classList.add('hidden');
+        $('dashboardView').classList.remove('hidden');
+        $('authHeaderControls').classList.remove('hidden');
+        $('userEmailBadge').textContent = 'Signed in as ' + state.email;
+
+        // Default event date to today
+        $('albumDate').value = new Date().toISOString().slice(0, 10);
+        loadAlbums();
+      }
+
+      // Load Albums
+      async function loadAlbums() {
+        try {
+          const res = await fetch('/api/gallery?year=' + encodeURIComponent(state.selectedYear));
+          if (!res.ok) throw new Error('Failed to fetch albums');
+          const data = await res.json();
+          state.albums = data.albums || [];
+          state.availableYears = data.years || [];
+          $('albumCountDisplay').textContent = String(state.albums.length);
+          syncAdminYearFilter();
+          renderAlbumsList();
+        } catch (err) {
+          showToast(err.message, 'error');
+        }
+      }
+
+      function syncAdminYearFilter() {
+        const select = $('adminYearFilter');
+        select.innerHTML =
+          '<option value="All">All years</option>' +
+          state.availableYears.map((y) => `<option value="${escapeHtml(y)}">${escapeHtml(y)}</option>`).join('');
+        select.value = state.selectedYear;
+      }
+
+      function renderAlbumsList() {
+        const container = $('adminAlbumsList');
+        if (!state.albums.length) {
+          container.innerHTML = `
+            <div class="p-12 text-center text-inkSecondary bg-paper rounded-2xl border hairline">
+              <p class="text-base">No albums found for this filter. Create a new album above to get started.</p>
+            </div>
+          `;
+          return;
+        }
+
+        container.innerHTML = state.albums.map((album) => {
+          const photos = album.photos || [];
+          return `
+          <div class="bg-paper border hairline rounded-2xl p-5 sm:p-6 transition-all">
+            <div class="flex flex-col sm:flex-row sm:items-start justify-between gap-4 pb-4 border-b hairline">
+              <div>
+                <div class="flex items-center gap-2 text-xs text-inkMuted tabular-nums">
+                  <span class="font-semibold text-nssRed">${escapeHtml(album.year || '2026')}</span>
+                  <span>&middot;</span>
+                  <span>${escapeHtml(formatDate(album.event_date))}</span>
+                  <span>&middot;</span>
+                  <span class="font-semibold text-nssNavy">${photos.length} photograph${photos.length === 1 ? '' : 's'}</span>
+                </div>
+                <h4 class="font-serif text-xl font-semibold text-nssNavyDeep mt-1">${escapeHtml(album.title)}</h4>
+                <p class="text-sm text-inkSecondary mt-1 leading-relaxed">${escapeHtml(album.description)}</p>
+              </div>
+              <div class="flex items-center gap-2 shrink-0">
+                <button
+                  type="button"
+                  data-append-photos="${album.id}"
+                  class="px-3 py-1.5 rounded-lg bg-surface border hairline text-xs font-semibold text-nssNavy hover:bg-stoneBand transition-colors"
+                >
+                  + Add Photos
+                </button>
+                <button
+                  type="button"
+                  data-edit-album="${album.id}"
+                  class="px-3 py-1.5 rounded-lg bg-surface border hairline text-xs font-medium text-inkSecondary hover:text-ink hover:bg-stoneBand transition-colors"
+                >
+                  Edit
+                </button>
+                <button
+                  type="button"
+                  data-delete-album="${album.id}"
+                  class="px-3 py-1.5 rounded-lg bg-nssRedSoft hover:bg-nssRed hover:text-white text-xs font-medium text-nssRed transition-colors"
+                >
+                  Delete
+                </button>
+              </div>
+            </div>
+
+            <!-- Photos Strip -->
+            <div class="mt-4">
+              <p class="text-xs font-semibold text-inkMuted uppercase tracking-wider mb-2">Photographs in this album</p>
+              <div class="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-6 lg:grid-cols-8 gap-3">
+                ${photos.map((p) => `
+                  <div class="relative group rounded-xl overflow-hidden bg-stoneBand aspect-square border hairline">
+                    <img src="${escapeHtml(p.filePath)}" alt="" class="w-full h-full object-cover" />
+                    <button
+                      type="button"
+                      data-delete-photo="${p.id}"
+                      class="absolute top-1 right-1 p-1 rounded-md bg-nssRed/90 hover:bg-nssRed text-white opacity-0 group-hover:opacity-100 transition-opacity shadow-sm"
+                      title="Delete this photo"
+                    >
+                      <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
+                    </button>
+                  </div>
+                `).join('')}
+              </div>
+            </div>
+          </div>
+          `;
+        }).join('');
+      }
+
+      // Drag and Drop & Multiple File Selection
+      const dropZone = $('dropZone');
+      const fileInput = $('fileInput');
+
+      dropZone.addEventListener('click', () => fileInput.click());
+
+      dropZone.addEventListener('dragover', (e) => {
+        e.preventDefault();
+        dropZone.classList.add('border-nssNavy', 'bg-nssNavySoft/50');
+      });
+
+      dropZone.addEventListener('dragleave', () => {
+        dropZone.classList.remove('border-nssNavy', 'bg-nssNavySoft/50');
+      });
+
+      dropZone.addEventListener('drop', (e) => {
+        e.preventDefault();
+        dropZone.classList.remove('border-nssNavy', 'bg-nssNavySoft/50');
+        if (e.dataTransfer.files && e.dataTransfer.files.length) {
+          handleSelectedFiles(Array.from(e.dataTransfer.files));
+        }
+      });
+
+      fileInput.addEventListener('change', (e) => {
+        if (e.target.files && e.target.files.length) {
+          handleSelectedFiles(Array.from(e.target.files));
+        }
+      });
+
+      function handleSelectedFiles(files) {
+        // filter images
+        const valid = files.filter((f) => f.type.startsWith('image/'));
+        if (valid.length < files.length) {
+          showToast('Some non-image files were skipped.', 'error');
+        }
+        state.selectedFiles = [...state.selectedFiles, ...valid];
+        renderPreviews();
+      }
+
+      function renderPreviews() {
+        const container = $('previewContainer');
+        const grid = $('previewGrid');
+        const countBadge = $('previewCount');
+
+        if (!state.selectedFiles.length) {
+          container.classList.add('hidden');
+          grid.innerHTML = '';
+          return;
+        }
+
+        container.classList.remove('hidden');
+        countBadge.textContent = `${state.selectedFiles.length} photo${state.selectedFiles.length === 1 ? '' : 's'} ready for upload`;
+
+        grid.innerHTML = state.selectedFiles.map((file, idx) => {
+          const url = URL.createObjectURL(file);
+          return `
+            <div class="relative group rounded-xl overflow-hidden aspect-square border hairline bg-surface shadow-xs">
+              <img src="${url}" alt="" class="w-full h-full object-cover" />
+              <div class="absolute inset-x-0 bottom-0 p-1 bg-ink/75 text-[10px] text-white truncate text-center">
+                ${escapeHtml(file.name)} (${formatBytes(file.size)})
+              </div>
+              <button
+                type="button"
+                data-remove-preview="${idx}"
+                class="absolute top-1 right-1 p-1 rounded-md bg-nssRed text-white opacity-90 hover:opacity-100 transition-opacity"
+                title="Remove"
+              >
+                <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+              </button>
+            </div>
+          `;
+        }).join('');
+      }
+
+      $('previewGrid').addEventListener('click', (e) => {
+        const btn = e.target.closest('[data-remove-preview]');
+        if (btn) {
+          const idx = Number(btn.getAttribute('data-remove-preview'));
+          state.selectedFiles.splice(idx, 1);
+          renderPreviews();
+        }
+      });
+
+      $('clearSelectionBtn').addEventListener('click', () => {
+        state.selectedFiles = [];
+        fileInput.value = '';
+        renderPreviews();
+      });
+
+      // Submit New Album
+      $('albumUploadForm').addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const title = $('albumTitle').value.trim();
+        const eventDate = $('albumDate').value;
+        const description = $('albumDescription').value.trim();
+
+        if (!state.selectedFiles.length) {
+          showToast('Please select at least one photograph to upload.', 'error');
+          return;
+        }
+
+        const formData = new FormData();
+        formData.append('title', title);
+        formData.append('eventDate', eventDate);
+        formData.append('description', description);
+        state.selectedFiles.forEach((file) => {
+          formData.append('photos', file);
+        });
+
+        const submitBtn = $('uploadSubmitBtn');
+        const origText = submitBtn.innerHTML;
+        submitBtn.disabled = true;
+        submitBtn.innerHTML = 'Uploading &amp; Processing...';
+
+        try {
+          const res = await fetch('/api/admin/albums', {
+            method: 'POST',
+            body: formData
+          });
+
+          const data = await res.json();
+          if (!res.ok) throw new Error(data.error || 'Failed to publish album');
+
+          showToast('Album and photographs published successfully!');
+          $('albumUploadForm').reset();
+          state.selectedFiles = [];
+          renderPreviews();
+          $('albumDate').value = new Date().toISOString().slice(0, 10);
+          loadAlbums();
+        } catch (err) {
+          showToast(err.message, 'error');
+        } finally {
+          submitBtn.disabled = false;
+          submitBtn.innerHTML = origText;
+        }
+      });
+
+      // Handle Album Actions (Add Photos, Edit, Delete)
+      $('adminAlbumsList').addEventListener('click', (e) => {
+        const addBtn = e.target.closest('[data-append-photos]');
+        if (addBtn) {
+          const id = Number(addBtn.getAttribute('data-append-photos'));
+          const album = state.albums.find((a) => a.id === id);
+          if (!album) return;
+          $('appendAlbumId').value = album.id;
+          $('appendPhotosTargetTitle').textContent = 'Upload additional photos for "' + album.title + '"';
+          $('appendPhotosModal').classList.remove('hidden');
+          return;
+        }
+
+        const editBtn = e.target.closest('[data-edit-album]');
+        if (editBtn) {
+          const id = Number(editBtn.getAttribute('data-edit-album'));
+          const album = state.albums.find((a) => a.id === id);
+          if (!album) return;
+          $('editAlbumId').value = album.id;
+          $('editAlbumTitle').value = album.title;
+          $('editAlbumDate').value = album.event_date;
+          $('editAlbumDescription').value = album.description;
+          $('editAlbumModal').classList.remove('hidden');
+          return;
+        }
+
+        const delBtn = e.target.closest('[data-delete-album]');
+        if (delBtn) {
+          const id = Number(delBtn.getAttribute('data-delete-album'));
+          const album = state.albums.find((a) => a.id === id);
+          if (!album) return;
+          state.pendingDeleteType = 'album';
+          state.pendingDeleteId = id;
+          $('deleteMessage').textContent = `Are you sure you want to delete "${album.title}" and its ${album.photos.length} photograph(s)? This cannot be undone.`;
+          $('deleteModal').classList.remove('hidden');
+          return;
+        }
+
+        const delPhotoBtn = e.target.closest('[data-delete-photo]');
+        if (delPhotoBtn) {
+          const photoId = Number(delPhotoBtn.getAttribute('data-delete-photo'));
+          state.pendingDeleteType = 'photo';
+          state.pendingDeleteId = photoId;
+          $('deleteMessage').textContent = 'Are you sure you want to delete this single photograph from the album?';
+          $('deleteModal').classList.remove('hidden');
+        }
+      });
+
+      // Modal Close Handlers
+      function closeModals() {
+        $('editAlbumModal').classList.add('hidden');
+        $('appendPhotosModal').classList.add('hidden');
+        $('deleteModal').classList.add('hidden');
+        $('changePwdModal').classList.add('hidden');
+        state.pendingDeleteType = null;
+        state.pendingDeleteId = null;
+      }
+
+      $('cancelEditAlbumBtn').addEventListener('click', closeModals);
+      $('editAlbumBackdrop').addEventListener('click', closeModals);
+      $('cancelAppendBtn').addEventListener('click', closeModals);
+      $('appendPhotosBackdrop').addEventListener('click', closeModals);
+      $('cancelDeleteBtn').addEventListener('click', closeModals);
+      $('deleteBackdrop').addEventListener('click', closeModals);
+      $('cancelChangePwdBtn').addEventListener('click', closeModals);
+      $('changePwdBackdrop').addEventListener('click', closeModals);
+
+      // Submit Edit Album
+      $('editAlbumForm').addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const id = $('editAlbumId').value;
+        const title = $('editAlbumTitle').value.trim();
+        const eventDate = $('editAlbumDate').value;
+        const description = $('editAlbumDescription').value.trim();
+
+        try {
+          const res = await fetch(`/api/admin/albums/${id}`, {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ title, eventDate, description })
+          });
+          const data = await res.json();
+          if (!res.ok) throw new Error(data.error || 'Failed to update album');
+          showToast('Album details updated');
+          closeModals();
+          loadAlbums();
+        } catch (err) {
+          showToast(err.message, 'error');
+        }
+      });
+
+      // Submit Append Photos
+      $('appendPhotosForm').addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const id = $('appendAlbumId').value;
+        const files = $('appendFileInput').files;
+        if (!files || !files.length) {
+          showToast('Please select at least one image file', 'error');
+          return;
+        }
+
+        const formData = new FormData();
+        Array.from(files).forEach((file) => formData.append('photos', file));
+
+        const btn = $('appendSubmitBtn');
+        btn.disabled = true;
+        btn.textContent = 'Uploading...';
+
+        try {
+          const res = await fetch(`/api/admin/albums/${id}/photos`, {
+            method: 'POST',
+            body: formData
+          });
+          const data = await res.json();
+          if (!res.ok) throw new Error(data.error || 'Failed to attach photos');
+          showToast('Photos added to album');
+          closeModals();
+          $('appendPhotosForm').reset();
+          loadAlbums();
+        } catch (err) {
+          showToast(err.message, 'error');
+        } finally {
+          btn.disabled = false;
+          btn.textContent = 'Upload & Attach';
+        }
+      });
+
+      // Confirm Delete Handler
+      $('confirmDeleteBtn').addEventListener('click', async () => {
+        if (!state.pendingDeleteId || !state.pendingDeleteType) return;
+        const { pendingDeleteType: type, pendingDeleteId: id } = state;
+
+        try {
+          const url = type === 'album' ? `/api/admin/albums/${id}` : `/api/admin/photos/${id}`;
+          const res = await fetch(url, { method: 'DELETE' });
+          const data = await res.json();
+          if (!res.ok) throw new Error(data.error || 'Failed to delete');
+
+          showToast(type === 'album' ? 'Album removed' : 'Photo removed');
+          closeModals();
+          loadAlbums();
+        } catch (err) {
+          showToast(err.message, 'error');
+        }
+      });
+
+      // Admin Login Handler
+      $('loginForm').addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const email = $('loginEmail').value.trim();
+        const password = $('loginPassword').value;
+        const errBox = $('loginError');
+        errBox.classList.add('hidden');
+
+        try {
+          const res = await fetch('/api/auth/login', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ email, password })
+          });
+          const data = await res.json();
+          if (!res.ok) throw new Error(data.error || 'Invalid email or password');
+
+          state.authenticated = true;
+          state.email = data.email;
+          showToast('Signed in to NSS administration');
+          $('loginForm').reset();
+          showDashboard();
+        } catch (err) {
+          errBox.textContent = err.message;
+          errBox.classList.remove('hidden');
+        }
+      });
+
+      // Sign Out Handler
+      $('signOutBtn').addEventListener('click', async () => {
+        try {
+          await fetch('/api/auth/logout', { method: 'POST' });
+        } finally {
+          showToast('Signed out');
+          showLogin();
+        }
+      });
+
+      // Change Password Handler
+      $('openChangePwdBtn').addEventListener('click', () => {
+        $('changePwdModal').classList.remove('hidden');
+      });
+
+      $('changePwdForm').addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const currentPassword = $('curPwd').value;
+        const newPassword = $('newPwd').value;
+
+        try {
+          const res = await fetch('/api/auth/change-password', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ currentPassword, newPassword })
+          });
+          const data = await res.json();
+          if (!res.ok) throw new Error(data.error || 'Failed to change password');
+
+          showToast('Admin password changed successfully');
+          closeModals();
+          $('changePwdForm').reset();
+        } catch (err) {
+          showToast(err.message, 'error');
+        }
+      });
+
+      // Filter Handler
+      $('adminYearFilter').addEventListener('change', (e) => {
+        state.selectedYear = e.target.value || 'All';
+        loadAlbums();
+      });
+
+      // Keyboard Esc to close modals
+      window.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape') closeModals();
+      });
+
+      // Run
+      checkAuth();
+    })();
+  </script>
+</body>
+</html>
