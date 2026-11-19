@@ -52,6 +52,11 @@ app.use(express.json({ limit: '20mb' }));
 app.use(express.urlencoded({ extended: true, limit: '20mb' }));
 app.use(cookieParser());
 
+// Lightweight Health Check Endpoint (for UptimeRobot / ping monitors)
+app.get(['/health', '/ping'], (req, res) => {
+  res.status(200).json({ status: 'ok', uptime: Math.floor(process.uptime()), timestamp: new Date().toISOString() });
+});
+
 // Serve Admin portal directly for /admin and /admin/
 app.get(['/admin', '/admin/'], (req, res) => {
   res.sendFile(path.join(__dirname, 'public', 'admin', 'index.html'));
@@ -318,4 +323,19 @@ app.listen(PORT, '0.0.0.0', () => {
   console.log(`[NSS BIT Server] Listening on http://localhost:${PORT}`);
   console.log(`[NSS BIT Server] Public site: http://localhost:${PORT}`);
   console.log(`[NSS BIT Server] Admin portal: http://localhost:${PORT}/admin`);
+  console.log(`[NSS BIT Server] Health check: http://localhost:${PORT}/health`);
+
+  // Optional automated keep-alive (useful for Render free tier sleep prevention)
+  const pingUrl = process.env.RENDER_EXTERNAL_URL || process.env.PING_URL;
+  if (pingUrl) {
+    const PING_INTERVAL_MS = 14 * 60 * 1000; // 14 mins (Render sleeps at 15 mins)
+    setInterval(() => {
+      if (typeof fetch === 'function') {
+        fetch(`${pingUrl}/health`)
+          .then((r) => console.log(`[Keep-Alive] Pinged ${pingUrl}/health - Status: ${r.status}`))
+          .catch((err) => console.warn(`[Keep-Alive] Ping failed:`, err.message));
+      }
+    }, PING_INTERVAL_MS);
+    console.log(`[Keep-Alive] Scheduled self-ping for ${pingUrl}/health every 14 minutes`);
+  }
 });
